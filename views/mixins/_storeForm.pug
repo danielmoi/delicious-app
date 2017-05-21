@@ -1,0 +1,17 @@
+mixin storeForm(store = {})
+
+  form(action="/add" method="POST" class="card")
+    label(for="name") Name
+    input(type="text" name="name")
+
+    label(for="description") Description
+    textarea(name="description")
+
+    - const choices = ['Wifi', 'Open Late', 'Family Friendly', 'Vegetarian', 'Licensed']
+    ul.tags
+      each choice in choices /* our loop */
+        .tag.tag__choice <!-- this is a DIV by default -->
+          input(type="checkbox" id=choice value=choice name="tags")
+          label(for=choice)= choice /* this is another way of interpolating */
+
+    input(type="submit" value="Save" class="button")

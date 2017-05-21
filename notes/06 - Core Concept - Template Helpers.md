@@ -1,1 +1,3 @@
 - sometimes we need data in every template, without needing to pass it in through locals
+- the EXPORT from the helpers file is added to `res.locals` in our app.js
+- we can pull in libraries, like Moment, and make them (and their methods), available inside our templates!

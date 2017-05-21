@@ -22,3 +22,4 @@
 
 
 - a BLOCK is something that can be filled in by another TEMPLATE
+- after that, we essentially write what will be the "default" for the block, if that block is not passed in
