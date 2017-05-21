@@ -1,0 +1,1 @@
+- sometimes we need data in every template, without needing to pass it in through locals
