@@ -8,3 +8,6 @@
   - grabs data from M, sends it to a View
 
 - let's make a conttroller for each area of our app
+- a controller is just factoring out the callback function in our router
+
+- this keeps things tidy!
