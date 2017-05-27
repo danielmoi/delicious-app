@@ -1,0 +1,1 @@
+- need to set the location.type to be a 'Point' when we UPDATE the store
