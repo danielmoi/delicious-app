@@ -1,5 +1,32 @@
 /* eslint-disable no-underscore-dangle */
 const mongoose = require('mongoose');
+const multer = require('multer');
+const jimp = require('jimp');
+const uuid = require('uuid');
+
+const multerOptions = {
+  // 1. STORAGE LOCATION
+  // where will the file be stored when it's uploaded
+  // let's save it to memory because we don't want to keep the file
+  // we are only going to save the resized image to file
+  storage: multer.memoryStorage(),
+
+  // 2. FILE TYPES
+  // what types of files are allowed
+  fileFilter(req, file, next) {
+    console.log('file:', file);
+    const isPhoto = file.mimetype.startsWith('image/');
+    if (isPhoto) {
+      next(null, true);
+      // the first value to next is an ERROR
+      // the second is what needs to be passed
+    } else {
+      next({
+        message: 'That file type is not allowed',
+      }, false);
+    }
+  },
+};
 
 const Store = mongoose.model('Store');
 
@@ -15,6 +42,26 @@ const addStore = (req, res) => {
     title: 'Add store',
   });
 };
+
+const upload = multer(multerOptions).single('photo');
+
+const resize = async (req, res, next) => {
+  // check if new file to resize
+  if (!req.file) {
+    next(); // skip to next middleware
+    return;
+  }
+  const extension = req.file.mimetype.split('/')[1];
+  req.body.photo = `${uuid.v4()}.${extension}`;
+
+  // now resize
+  const photo = await jimp.read(req.file.buffer);
+  await photo.resize(800, jimp.AUTO);
+  await photo.write(`./public/uploads/${req.body.photo}`);
+
+  // once we have written the photo to our filesystem, keep going!
+  next();
+}
 
 const editStore = async (req, res) => {
   // 1. Find the store
@@ -39,6 +86,7 @@ const createStore = async (req, res) => {
 
 const updateStore = async (req, res) => {
   // set location data to be a Point
+  console.log('req.body:', req.body);
   req.body.location.type = 'Point';
 
   const store = await Store.findOneAndUpdate({
@@ -63,11 +111,45 @@ const getStores = async (req, res) => {
   });
 };
 
+const getStoreBySlug = async (req, res, next) => {
+  const store = await Store.findOne({
+    slug: req.params.slug,
+  });
+  if (!store) {
+    next();
+    return;
+  }
+  res.render('store', {
+    store,
+    title: store.name,
+  });
+};
+
+const getStoresByTag = async (req, res, next) => {
+  const tag = req.params.tag;
+  const tagQuery = tag || { $exists: true };
+  const tagsPromise = Store.getTagsList();
+  const storesPromise = Store.find({ tags: tagQuery });
+
+  const [tags, stores] = await Promise.all([tagsPromise, storesPromise]);
+
+  res.render('tag', {
+    title: 'Tags',
+    tags,
+    stores,
+    tag,
+  });
+}
+
 module.exports = {
   homePage,
-  addStore,
   editStore,
   createStore,
   updateStore,
   getStores,
+  getStoreBySlug,
+  getStoresByTag,
+  addStore,
+  resize,
+  upload,
 };

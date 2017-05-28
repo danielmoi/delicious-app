@@ -1,0 +1,3 @@
+- let's add a store page!
+- add a map!
+- this is using the Static Map library - need to add this in Google API manager

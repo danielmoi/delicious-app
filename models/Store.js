@@ -19,6 +19,7 @@ const storeSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  photo: String,
   location: {
     type: {
       type: String,
@@ -35,13 +36,44 @@ const storeSchema = new mongoose.Schema({
   },
 });
 
-storeSchema.pre('save', function save(next) {
+storeSchema.pre('save', async function save(next) {
   if (!this.isModified('name')) {
     next();
     return;
   }
   this.slug = slug(this.name);
+
+  // find other stores with same slug
+  const slugRegEx = new RegExp(`^(${this.slug})((-[0-9]*$)?)$`, 'i');
+  const storesWithSlug = await this.constructor.find({
+    slug: slugRegEx,
+  });
+  if (storesWithSlug.length) {
+    this.slug = `${this.slug}-${storesWithSlug.length + 1}`;
+  }
+
   next();
 });
+
+storeSchema.statics.getTagsList = function() {
+  return this.aggregate([
+
+    // step 1 in pipe = unzip
+    { $unwind: '$tags' },
+
+    // step 2 in pipeline = group and increment a count
+    { $group: {
+      _id: '$tags',
+      count: { // create a new property!
+        $sum: 1,
+      },
+    }},
+
+    // step 3 = sort
+    { $sort: {
+      count: -1,
+     }},
+  ]);
+};
 
 module.exports = mongoose.model('Store', storeSchema);

@@ -1,0 +1,1 @@
+- use Regex to search through all stores, and increment the slug
