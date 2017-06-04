@@ -13,6 +13,9 @@ const routes = require('./routes/index');
 const helpers = require('./helpers');
 const errorHandlers = require('./handlers/errorHandlers');
 
+// this will invoke the code inside our passport handler
+require('./handlers/passport');
+
 // create our Express app
 const app = express();
 
