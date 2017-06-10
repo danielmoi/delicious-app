@@ -149,6 +149,35 @@ const getStoresByTag = async (req, res, next) => {
   });
 }
 
+const searchStores = async (req, res) => {
+  const results = await Store
+  // 1. find stores
+  .find({
+    $text: {
+      $search: req.query.q,
+    },
+  }, {
+    score: {
+      $meta: 'textScore',
+    },
+  })
+  // 2. sort
+  .sort({
+    score: {
+      $meta: 'textScore',
+    },
+  })
+  // 3. limit
+  .limit(5);
+
+  res.json(results);
+};
+// module.exports.searchStores = async (req, res) => {
+//   res.json({
+//     it: 'works',
+//   });
+// };
+
 module.exports = {
   homePage,
   editStore,
@@ -160,4 +189,5 @@ module.exports = {
   addStore,
   resize,
   upload,
+  searchStores,
 };

@@ -10,6 +10,7 @@ const {
   getStoresByTag,
   upload,
   resize,
+  searchStores,
 } = require('../controllers/storeController');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
@@ -64,6 +65,9 @@ router.post('/account/reset/:token',
   authController.confirmedPasswords,
   catchErrors(authController.update)
 );
+
+/* --- API ------------------------ */
+router.get('/api/search', catchErrors(searchStores));
 
 router.get('/logout', authController.logout);
 
