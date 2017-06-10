@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const User = mongoose.model('User');
 const promisify = require('es6-promisify');
+const mail = require('../handlers/mail');
 
 // this is the AUTHENTICATION STRATEGY (which type of login we are wanting: Github, Twitter, etc)
 // not a regular route, we are using passport's middlewares
@@ -55,8 +56,17 @@ const forgot = async (req, res) => {
   await user.save();
 
   // 3. send them email with that token
-  const resetUrl = `http://${req.headers.host}/account/reset/${user.resetPasswordToken}`;
-  req.flash('success', `You have been emailed a password reset link. ${resetUrl}`);
+  const resetURL = `http://${req.headers.host}/account/reset/${user.resetPasswordToken}`;
+
+  // send email!
+  await mail.send({
+    user,
+    subject: 'Password Reset',
+    resetURL,
+    filename: 'password-reset',
+  });
+
+  req.flash('success', `You have been emailed a password reset link.`);
 
   // 4. redirect to login page
   res.redirect('/login');
