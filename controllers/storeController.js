@@ -29,6 +29,7 @@ const multerOptions = {
 };
 
 const Store = mongoose.model('Store');
+const User = mongoose.model('User');
 
 const homePage = (req, res) => {
   req.flash('warning', 'Warning');
@@ -205,6 +206,36 @@ const mapPage = async (req, res) => {
   });
 };
 
+/* --- HEARTS ------------------------ */
+const heartStore = async (req, res) => {
+  const hearts = req.user.hearts.map(heart => heart.toString());
+
+  const operator = hearts.includes(req.params.id)
+    ? '$pull'
+    : '$addToSet'; // this will make it a unique set (to be safe)
+
+  const user = await User.findByIdAndUpdate(req.user._id, {
+    [operator]: {
+      hearts: req.params.id,
+    }}, {
+      new: true, // return updated user
+    });
+  res.json(user);
+};
+
+const getHearts = async (req, res) => {
+  const stores = await Store.find({
+    _id: {
+      $in: req.user.hearts,
+    },
+  });
+  res.render('stores', {
+    title: 'Hearted',
+    stores,
+  });
+};
+
+/* --- URGHHH ------------------------ */
 module.exports = {
   homePage,
   editStore,
@@ -219,4 +250,6 @@ module.exports = {
   searchStores,
   mapStores,
   mapPage,
+  heartStore,
+  getHearts,
 };

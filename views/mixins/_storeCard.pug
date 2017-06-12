@@ -4,6 +4,19 @@ mixin storeCard(store = {})
 
     .store__hero
       .store__actions
+        //- dont show hearts to users not logged in!
+        if user
+          .store__action.store__action--heart
+            form.heart(
+              method="POST"
+              action=`/api/stores/${store._id}/heart`
+            )
+              - const heartStrings = user.hearts.map(h => h.toString())
+              - const heartClass = heartStrings.includes(store._id.toString()) ? 'heart__button--hearted' : ''
+
+              button.heart__button(type="submit" name="heart" class=heartClass)
+                != h.icon('heart')
+
         if user && store.author.equals(user._id)
           .store__action.store__action--edit
             a(href=`/stores/${store.id}/edit`)

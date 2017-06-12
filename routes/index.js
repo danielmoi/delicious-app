@@ -13,6 +13,8 @@ const {
   searchStores,
   mapStores,
   mapPage,
+  heartStore,
+  getHearts,
 } = require('../controllers/storeController');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
@@ -72,10 +74,12 @@ router.post('/account/reset/:token',
 );
 router.get('/logout', authController.logout);
 
-
+/* --- HEARTS ------------------------ */
+router.get('/hearts', authController.isLoggedIn, catchErrors(getHearts));
 
 /* --- API ------------------------ */
 router.get('/api/search', catchErrors(searchStores));
 router.get('/api/stores/near', catchErrors(mapStores));
+router.post('/api/stores/:id/heart', catchErrors(heartStore));
 
 module.exports = router;

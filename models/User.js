@@ -27,6 +27,10 @@ const userSchema = new Schema({
   resetPasswordExpires: {
     type: String,
   },
+  hearts: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Store',
+  }],
 });
 
 
