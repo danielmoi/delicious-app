@@ -47,4 +47,4 @@ score: 0.5384615384615384,
 Cookie Party <img src="http://fillmurray.com/500/500" onload="alert('Hello....!')" />
 ```
 
-- we can add another pre-save hook to strip HTML from the title
+- we can add another pre-save hook to strip HTML from the titl

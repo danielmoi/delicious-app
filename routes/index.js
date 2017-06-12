@@ -11,6 +11,8 @@ const {
   upload,
   resize,
   searchStores,
+  mapStores,
+  mapPage,
 } = require('../controllers/storeController');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
@@ -56,6 +58,9 @@ router.post('/register',
   authController.login
 );
 
+/* --- MAP ------------------------ */
+router.get('/map', catchErrors(mapPage));
+
 
 router.get('/account', authController.isLoggedIn, userController.account);
 router.post('/account', authController.isLoggedIn, catchErrors(userController.updateAccount));
@@ -65,10 +70,12 @@ router.post('/account/reset/:token',
   authController.confirmedPasswords,
   catchErrors(authController.update)
 );
+router.get('/logout', authController.logout);
+
+
 
 /* --- API ------------------------ */
 router.get('/api/search', catchErrors(searchStores));
-
-router.get('/logout', authController.logout);
+router.get('/api/stores/near', catchErrors(mapStores));
 
 module.exports = router;

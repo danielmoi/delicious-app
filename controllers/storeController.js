@@ -178,6 +178,33 @@ const searchStores = async (req, res) => {
 //   });
 // };
 
+const mapStores = async (req, res) => {
+  const coordinates = [req.query.lng, req.query.lat].map(parseFloat);
+
+  const query = {
+    location: {
+      $near: {
+        $geometry: {
+          type: 'Point',
+          coordinates,
+        },
+        $maxDistance: 10000, // 10 km
+      }
+    }
+  }
+
+  const stores = await Store
+    .find(query)
+    .select('slug name description location photo');
+  res.json(stores);
+};
+
+const mapPage = async (req, res) => {
+  res.render('map', {
+    title: 'Map',
+  });
+};
+
 module.exports = {
   homePage,
   editStore,
@@ -190,4 +217,6 @@ module.exports = {
   resize,
   upload,
   searchStores,
+  mapStores,
+  mapPage,
 };
