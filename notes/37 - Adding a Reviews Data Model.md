@@ -1,0 +1,2 @@
+- cool
+- 1 review has 1 store, and 1 user

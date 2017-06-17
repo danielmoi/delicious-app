@@ -70,25 +70,91 @@ storeSchema.pre('save', async function save(next) {
   next();
 });
 
-storeSchema.statics.getTagsList = function() {
+storeSchema.statics.getTagsList = function () {
   return this.aggregate([
 
     // step 1 in pipe = unzip
     { $unwind: '$tags' },
 
     // step 2 in pipeline = group and increment a count
-    { $group: {
-      _id: '$tags',
-      count: { // create a new property!
-        $sum: 1,
+    {
+      $group: {
+        _id: '$tags',
+        count: { // create a new property!
+          $sum: 1,
+        },
       },
-    }},
-
+    },
     // step 3 = sort
-    { $sort: {
-      count: -1,
-     }},
+    {
+      $sort: {
+        count: -1,
+      },
+    },
   ]);
 };
+
+storeSchema.statics.getTopStores = function () {
+  return this.aggregate([
+    // Lookup Stores and populate their reviews
+    {
+      $lookup: {
+        from: 'reviews',
+        localField: '_id',
+        foreignField: 'store',
+        as: 'reviews',
+      },
+    },
+
+    // Filter only for items that have 2 or more reviews
+    {
+      $match: {
+        'reviews.1': {
+          $exists: true,
+        },
+      },
+    },
+
+    // Add the average reviews field
+    {
+      $project: {
+        averageRating: {
+          $avg: '$reviews.rating', // $reviews is the data being piped in
+        },
+        photo: '$$ROOT.photo',
+        reviews: '$$ROOT.reviews',
+        name: '$$ROOT.name',
+        slug: '$$ROOT.slug',
+      },
+    },
+
+    // Sort it by our new field, highest reviews first
+    {
+      $sort: {
+        averageRating: -1,
+      },
+    },
+
+    // Limit to at most 10
+    {
+      $limit: 10,
+    },
+  ]);
+};
+
+
+storeSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'store',
+});
+
+function autopopulate(next) {
+  this.populate('reviews');
+  next();
+}
+
+storeSchema.pre('find', autopopulate);
+storeSchema.pre('findOne', autopopulate);
 
 module.exports = mongoose.model('Store', storeSchema);

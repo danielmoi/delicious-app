@@ -15,16 +15,22 @@ const {
   mapPage,
   heartStore,
   getHearts,
+  getTopStores,
 } = require('../controllers/storeController');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
+const reviewController = require('../controllers/reviewController');
 const { catchErrors } = require('../handlers/errorHandlers');
 
 const router = express.Router();
 
 // Do work here
 router.get('/', getStores);
+
 router.get('/stores', catchErrors(getStores));
+router.get('/stores/page/:page', catchErrors(getStores));
+
+
 router.get('/store/:slug', catchErrors(getStoreBySlug));
 router.get('/stores/:id/edit', catchErrors(editStore));
 
@@ -76,6 +82,11 @@ router.get('/logout', authController.logout);
 
 /* --- HEARTS ------------------------ */
 router.get('/hearts', authController.isLoggedIn, catchErrors(getHearts));
+
+/* --- REVIEWS ------------------------ */
+router.post('/reviews/:id', authController.isLoggedIn, catchErrors(reviewController.addReview));
+
+router.get('/top', catchErrors(getTopStores));
 
 /* --- API ------------------------ */
 router.get('/api/search', catchErrors(searchStores));

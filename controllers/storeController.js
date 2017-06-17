@@ -112,11 +112,40 @@ const updateStore = async (req, res) => {
 };
 
 const getStores = async (req, res) => {
-  const stores = await Store.find();
+  const page = req.params.page || 1;
+  const limit = 4;
+  const skip = (page * limit) - limit;
+
+  const storesPromise = Store
+    .find()
+    .skip(skip)
+    .limit(limit)
+    .sort({
+      created: 'desc',
+    });
+
+    // we could call populate
+    // .populate('reviews'); // this is get Store.reviews (relationship)
+    // but we will use our autopopulate instead
+
+  const storesCountPromise = Store.count();
+
+  const [stores, count] = await Promise.all([storesPromise, storesCountPromise]);
+
+  const pages = Math.ceil(count / limit);
+
+  if (!stores.length && skip) {
+    req.flash('info', `Hey! You asked for page ${page}. But that page doesn't exist, so I put you on page ${pages}`);
+    res.redirect(`/stores/page/${pages}`);
+    return;
+  }
 
   res.render('stores', {
     title: 'Stores',
     stores,
+    pages,
+    page,
+    count,
   });
 };
 
@@ -235,6 +264,14 @@ const getHearts = async (req, res) => {
   });
 };
 
+const getTopStores = async (req, res) => {
+  const stores = await Store.getTopStores();
+  res.render('topStores', {
+    stores,
+    title: 'Top Stores',
+  });
+};
+
 /* --- URGHHH ------------------------ */
 module.exports = {
   homePage,
@@ -252,4 +289,5 @@ module.exports = {
   mapPage,
   heartStore,
   getHearts,
+  getTopStores,
 };
